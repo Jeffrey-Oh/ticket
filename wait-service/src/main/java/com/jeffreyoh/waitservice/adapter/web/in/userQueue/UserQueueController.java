@@ -6,8 +6,12 @@ import com.jeffreyoh.waitservice.adapter.web.dto.RankNumberResponse;
 import com.jeffreyoh.waitservice.adapter.web.dto.RegisterUserResponse;
 import com.jeffreyoh.waitservice.application.port.in.userQueue.UserQueueUseCase;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+
+import java.time.Duration;
 
 @RestController
 @RequiredArgsConstructor
@@ -50,6 +54,25 @@ public class UserQueueController {
     ) {
         return userQueueUseCase.getRank(queue, userId)
             .map(RankNumberResponse::new);
+    }
+
+    @GetMapping("/touch")
+    public Mono<String> touch(
+        @RequestParam(name = "queue", defaultValue = "default") String queue,
+        @RequestParam(name = "userId") Long userId,
+        ServerWebExchange exchange
+    ) {
+        return Mono.defer(() -> userQueueUseCase.generateToken(queue, userId))
+            .map(token -> {
+                exchange.getResponse().addCookie(
+                    ResponseCookie.from("user-queue-%s-token".formatted(queue), token)
+                        .maxAge(Duration.ofSeconds(300))
+                        .path("/")
+                        .build()
+                );
+
+                return token;
+            });
     }
 
 }

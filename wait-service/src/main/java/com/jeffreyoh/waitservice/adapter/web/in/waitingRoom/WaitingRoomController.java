@@ -2,10 +2,12 @@ package com.jeffreyoh.waitservice.adapter.web.in.waitingRoom;
 
 import com.jeffreyoh.waitservice.application.port.in.userQueue.UserQueueUseCase;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpCookie;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.reactive.result.view.Rendering;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Controller
@@ -18,9 +20,14 @@ public class WaitingRoomController {
     public Mono<Rendering> waitingRoomPage(
         @RequestParam(name = "queue", defaultValue = "default") String queue,
         @RequestParam(name = "userId") Long userId,
-        @RequestParam(name = "redirectUrl") String redirectUrl
+        @RequestParam(name = "redirectUrl") String redirectUrl,
+        ServerWebExchange exchange
     ) {
-        return userQueueUseCase.isAllowed(queue, userId)
+        final String key = "user-queue-%s-token".formatted(queue);
+        final HttpCookie cookieValue = exchange.getRequest().getCookies().getFirst(key);
+        final String token = cookieValue != null ? cookieValue.getValue() : "";
+        
+        return userQueueUseCase.isAllowedByToken(queue, userId, token)
             .filter(allowed -> allowed) // 허용 가능한지 체크
             .flatMap(allowed -> Mono.just(Rendering.redirectTo(redirectUrl).build())) // 허용 가능하면 이동
             .switchIfEmpty( // 아직 허용되지 않을 경우 대기열 등록

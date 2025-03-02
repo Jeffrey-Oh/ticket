@@ -21,10 +21,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserQueueServiceTest {
 
     @Autowired
-    private UserQueueService userQueueService;
-
-    @Autowired
     private ReactiveRedisTemplate<String, String> reactiveRedisTemplate;
+
     @Autowired
     private UserQueueUseCase userQueueUseCase;
 
@@ -36,33 +34,33 @@ class UserQueueServiceTest {
 
     @Test
     void registerWaitQueue() {
-        StepVerifier.create(userQueueService.registerWaitQueue("default", 100L))
+        StepVerifier.create(userQueueUseCase.registerWaitQueue("default", 100L))
             .expectNext(1L)
             .verifyComplete();
 
-        StepVerifier.create(userQueueService.registerWaitQueue("default", 101L))
+        StepVerifier.create(userQueueUseCase.registerWaitQueue("default", 101L))
             .expectNext(2L)
             .verifyComplete();
 
-        StepVerifier.create(userQueueService.registerWaitQueue("default", 102L))
+        StepVerifier.create(userQueueUseCase.registerWaitQueue("default", 102L))
             .expectNext(3L)
             .verifyComplete();
     }
 
     @Test
     void alreadyRegisterWaitQueue() {
-        StepVerifier.create(userQueueService.registerWaitQueue("default", 100L))
+        StepVerifier.create(userQueueUseCase.registerWaitQueue("default", 100L))
             .expectNext(1L)
             .verifyComplete();
 
-        StepVerifier.create(userQueueService.registerWaitQueue("default", 100L))
+        StepVerifier.create(userQueueUseCase.registerWaitQueue("default", 100L))
             .expectError(ApplicationException.class)
             .verify();
     }
 
     @Test
     void emptyAllowUser() {
-        StepVerifier.create(userQueueService.allowUser("default", 3L))
+        StepVerifier.create(userQueueUseCase.allowUser("default", 3L))
             .expectNext(0L)
             .verifyComplete();
     }
@@ -70,10 +68,10 @@ class UserQueueServiceTest {
     @Test
     void allowUser() {
         StepVerifier.create(
-            userQueueService.registerWaitQueue("default", 100L)
-                .then(userQueueService.registerWaitQueue("default", 101L))
-                .then(userQueueService.registerWaitQueue("default", 102L))
-                .then(userQueueService.allowUser("default", 2L))
+            userQueueUseCase.registerWaitQueue("default", 100L)
+                .then(userQueueUseCase.registerWaitQueue("default", 101L))
+                .then(userQueueUseCase.registerWaitQueue("default", 102L))
+                .then(userQueueUseCase.allowUser("default", 2L))
             )
             .expectNext(2L)
             .verifyComplete();
@@ -82,10 +80,10 @@ class UserQueueServiceTest {
     @Test
     void allowUser2() {
         StepVerifier.create(
-                userQueueService.registerWaitQueue("default", 100L)
-                    .then(userQueueService.registerWaitQueue("default", 101L))
-                    .then(userQueueService.registerWaitQueue("default", 102L))
-                    .then(userQueueService.allowUser("default", 5L))
+                userQueueUseCase.registerWaitQueue("default", 100L)
+                    .then(userQueueUseCase.registerWaitQueue("default", 101L))
+                    .then(userQueueUseCase.registerWaitQueue("default", 102L))
+                    .then(userQueueUseCase.allowUser("default", 5L))
             )
             .expectNext(3L)
             .verifyComplete();
@@ -94,11 +92,11 @@ class UserQueueServiceTest {
     @Test
     void allowUserAfterRegisterWaitQueue() {
         StepVerifier.create(
-                userQueueService.registerWaitQueue("default", 100L)
-                    .then(userQueueService.registerWaitQueue("default", 101L))
-                    .then(userQueueService.registerWaitQueue("default", 102L))
-                    .then(userQueueService.allowUser("default", 3L))
-                    .then(userQueueService.registerWaitQueue("default", 200L))
+                userQueueUseCase.registerWaitQueue("default", 100L)
+                    .then(userQueueUseCase.registerWaitQueue("default", 101L))
+                    .then(userQueueUseCase.registerWaitQueue("default", 102L))
+                    .then(userQueueUseCase.allowUser("default", 3L))
+                    .then(userQueueUseCase.registerWaitQueue("default", 200L))
             )
             .expectNext(1L)
             .verifyComplete();
@@ -106,7 +104,7 @@ class UserQueueServiceTest {
 
     @Test
     void isNotAllowed() {
-        StepVerifier.create(userQueueService.isAllowed("default", 100L))
+        StepVerifier.create(userQueueUseCase.isAllowed("default", 100L))
             .expectNext(false)
             .verifyComplete();
     }
@@ -114,9 +112,9 @@ class UserQueueServiceTest {
     @Test
     void isNotAllowed2() {
         StepVerifier.create(
-                userQueueService.registerWaitQueue("default", 100L)
-                    .then(userQueueService.allowUser("default", 1L))
-                    .then(userQueueService.isAllowed("default", 101L))
+                userQueueUseCase.registerWaitQueue("default", 100L)
+                    .then(userQueueUseCase.allowUser("default", 1L))
+                    .then(userQueueUseCase.isAllowed("default", 101L))
             )
             .expectNext(false)
             .verifyComplete();
@@ -125,9 +123,9 @@ class UserQueueServiceTest {
     @Test
     void isAllowed() {
         StepVerifier.create(
-                userQueueService.registerWaitQueue("default", 100L)
-                    .then(userQueueService.allowUser("default", 1L))
-                    .then(userQueueService.isAllowed("default", 100L))
+                userQueueUseCase.registerWaitQueue("default", 100L)
+                    .then(userQueueUseCase.allowUser("default", 1L))
+                    .then(userQueueUseCase.isAllowed("default", 100L))
             )
             .expectNext(true)
             .verifyComplete();
@@ -136,14 +134,14 @@ class UserQueueServiceTest {
     @Test
     void getRank() {
         StepVerifier.create(
-            userQueueService.registerWaitQueue("default", 100L)
+            userQueueUseCase.registerWaitQueue("default", 100L)
                 .then(userQueueUseCase.getRank("default", 100L))
             )
             .expectNext(1L)
             .verifyComplete();
 
         StepVerifier.create(
-                userQueueService.registerWaitQueue("default", 101L)
+                userQueueUseCase.registerWaitQueue("default", 101L)
                     .then(userQueueUseCase.getRank("default", 101L))
             )
             .expectNext(2L)
@@ -157,4 +155,24 @@ class UserQueueServiceTest {
             .verifyComplete();
     }
 
+    @Test
+    void isNotAllowedByToken() {
+        StepVerifier.create(userQueueUseCase.isAllowedByToken("default", 100L, ""))
+            .expectNext(false)
+            .verifyComplete();
+    }
+
+    @Test
+    void isAllowedByToken() {
+        StepVerifier.create(userQueueUseCase.isAllowedByToken("default", 100L, "d333a5d4eb24f3f5cdd767d79b8c01aad3cd73d3537c70dec430455d37afe4b8"))
+            .expectNext(true)
+            .verifyComplete();
+    }
+
+    @Test
+    void generateToken() {
+        StepVerifier.create(userQueueUseCase.generateToken("default", 100L))
+            .expectNext("d333a5d4eb24f3f5cdd767d79b8c01aad3cd73d3537c70dec430455d37afe4b8")
+            .verifyComplete();
+    }
 }

@@ -1,0 +1,3 @@
+rootProject.name = 'ticket'
+include 'web-service'
+include 'wait-service'

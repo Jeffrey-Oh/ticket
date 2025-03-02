@@ -99,7 +99,7 @@ public class UserQueueService implements UserQueueUseCase {
     public void scheduleAllowUser() {
         if (!scheduling) return;
 
-        final long maxAllowUserCount= 3L;
+        final long maxAllowUserCount= 100L;
 
         reactiveRedisTemplate.scan(
             ScanOptions.scanOptions()

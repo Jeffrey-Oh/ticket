@@ -26,7 +26,7 @@ public class WaitingRoomController {
         final String key = "user-queue-%s-token".formatted(queue);
         final HttpCookie cookieValue = exchange.getRequest().getCookies().getFirst(key);
         final String token = cookieValue != null ? cookieValue.getValue() : "";
-        
+
         return userQueueUseCase.isAllowedByToken(queue, userId, token)
             .filter(allowed -> allowed) // 허용 가능한지 체크
             .flatMap(allowed -> Mono.just(Rendering.redirectTo(redirectUrl).build())) // 허용 가능하면 이동

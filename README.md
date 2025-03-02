@@ -21,3 +21,17 @@
 ```shell
    docker run --name mysql --env=MYSQL_ROOT_PASSWORD=root --env=MYSQL_USER=mysqluser --env=MYSQL_PASSWORD=mysqlpw -p 3306:3306 -d mysql:8.0
 ```
+
+### jmeter test
+- Number of Threads (users) : 30
+- Ramp-up period (seconds) : 10
+- url : http://localhost/waiting-room:9010
+- method : GET
+- params
+  - userId : ${__Random(1, 999999)}
+  - redirectUrl : http://localhost:9000
+- redis docker 컨테이너 접속 후 아래 명령어로 대기, 허용 인원 수 모니터링
+```shell
+   while [ ture ] ; do date; redis-cli zcard users:queue:default:wait; redis-cli zcard users:queue:default:proceed; sleep 1; done;
+```
+- 최대 접속 허용 인원 100명으로 설정되어 있으며 3초마다 허용 시킴

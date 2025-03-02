@@ -1,6 +1,7 @@
 package com.jeffreyoh.waitservice.application.useCase;
 
 import com.jeffreyoh.waitservice.EmbeddedRedis;
+import com.jeffreyoh.waitservice.application.port.in.userQueue.UserQueueUseCase;
 import com.jeffreyoh.waitservice.infrastructure.exception.ApplicationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,8 @@ class UserQueueServiceTest {
 
     @Autowired
     private ReactiveRedisTemplate<String, String> reactiveRedisTemplate;
+    @Autowired
+    private UserQueueUseCase userQueueUseCase;
 
     @BeforeEach
     public void beforeEach() {
@@ -127,6 +130,30 @@ class UserQueueServiceTest {
                     .then(userQueueService.isAllowed("default", 100L))
             )
             .expectNext(true)
+            .verifyComplete();
+    }
+
+    @Test
+    void getRank() {
+        StepVerifier.create(
+            userQueueService.registerWaitQueue("default", 100L)
+                .then(userQueueUseCase.getRank("default", 100L))
+            )
+            .expectNext(1L)
+            .verifyComplete();
+
+        StepVerifier.create(
+                userQueueService.registerWaitQueue("default", 101L)
+                    .then(userQueueUseCase.getRank("default", 101L))
+            )
+            .expectNext(2L)
+            .verifyComplete();
+    }
+
+    @Test
+    void emptyRank() {
+        StepVerifier.create(userQueueUseCase.getRank("default", 100L))
+            .expectNext(-1L)
             .verifyComplete();
     }
 

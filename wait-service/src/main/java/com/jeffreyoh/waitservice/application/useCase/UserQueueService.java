@@ -49,4 +49,11 @@ public class UserQueueService implements UserQueueUseCase {
             .map(rank -> rank >= 0);
     }
 
+    @Override
+    public Mono<Long> getRank(String queue, Long userId) {
+        return reactiveRedisTemplate.opsForZSet().rank(USER_QUEUE_WAIT_KEY.formatted(queue), userId.toString())
+            .defaultIfEmpty(-1L)
+            .map(rank -> rank >= 0 ? rank + 1 : rank);
+    }
+
 }

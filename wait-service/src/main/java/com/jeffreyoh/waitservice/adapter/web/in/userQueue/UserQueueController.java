@@ -2,6 +2,7 @@ package com.jeffreyoh.waitservice.adapter.web.in.userQueue;
 
 import com.jeffreyoh.waitservice.adapter.web.dto.AllowUserResponse;
 import com.jeffreyoh.waitservice.adapter.web.dto.AllowedUserResponse;
+import com.jeffreyoh.waitservice.adapter.web.dto.RankNumberResponse;
 import com.jeffreyoh.waitservice.adapter.web.dto.RegisterUserResponse;
 import com.jeffreyoh.waitservice.application.port.in.userQueue.UserQueueUseCase;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,15 @@ public class UserQueueController {
     ) {
         return userQueueUseCase.allowUser(queue, count)
             .map(allowed -> new AllowUserResponse(count, allowed ));
+    }
+
+    @GetMapping("/rank")
+    public Mono<RankNumberResponse> getRankUser(
+        @RequestParam(name = "queue", defaultValue = "default") String queue,
+        @RequestParam(name = "userId") Long userId
+    ) {
+        return userQueueUseCase.getRank(queue, userId)
+            .map(RankNumberResponse::new);
     }
 
 }

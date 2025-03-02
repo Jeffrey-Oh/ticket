@@ -13,4 +13,7 @@ public interface UserQueueUseCase {
     // 진입이 가능한 상태인지 조회
     Mono<Boolean> isAllowed(String queue, Long userId);
 
+    // 대기열 번호 조회
+    Mono<Long> getRank(String queue, Long userId);
+
 }

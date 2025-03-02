@@ -1,12 +1,11 @@
 package com.jeffreyoh.waitservice.adapter.web.in.userQueue;
 
+import com.jeffreyoh.waitservice.adapter.web.dto.AllowUserResponse;
+import com.jeffreyoh.waitservice.adapter.web.dto.AllowedUserResponse;
 import com.jeffreyoh.waitservice.adapter.web.dto.RegisterUserResponse;
 import com.jeffreyoh.waitservice.application.port.in.userQueue.UserQueueUseCase;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -23,6 +22,24 @@ public class UserQueueController {
     ) {
         return userQueueUseCase.registerWaitQueue(queue, userId)
             .map(RegisterUserResponse::new);
+    }
+
+    @GetMapping("/allowed")
+    public Mono<AllowedUserResponse> isAllowedUser(
+        @RequestParam(name = "queue", defaultValue = "default") String queue,
+        @RequestParam(name = "userId") Long userId
+    ) {
+        return userQueueUseCase.isAllowed(queue, userId)
+            .map(AllowedUserResponse::new);
+    }
+
+    @PostMapping("/allow")
+    public Mono<AllowUserResponse> allowUser(
+        @RequestParam(name = "queue", defaultValue = "default") String queue,
+        @RequestParam(name = "count") Long count
+    ) {
+        return userQueueUseCase.allowUser(queue, count)
+            .map(allowed -> new AllowUserResponse(count, allowed ));
     }
 
 }

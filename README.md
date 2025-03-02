@@ -11,5 +11,13 @@
 ### Redis 환경
 - docker 컨테이너 기반으로 localhost 에서 실행
 
+```shell
+   docker run --name redis -p 6379:6379 -d redis
+```
+
 ### MySQL 환경
 - R2DBC 를 사용하고 MySQL 를 docker 컨테이너 기반으로 localhost 에서 실행
+
+```shell
+   docker run --name mysql --env=MYSQL_ROOT_PASSWORD=root --env=MYSQL_USER=mysqluser --env=MYSQL_PASSWORD=mysqlpw -p 3306:3306 -d mysql:8.0
+```
